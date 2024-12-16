@@ -1,7 +1,7 @@
 const { Users, Shield, Award, Target, BrainCircuit } = lucide;
 
 function DemoInterface() {
-  const [selectedFeature, React.useState('teams')];
+const [selectedFeature, setSelectedFeature] = React.useState('teams');
 
   const features = {
     teams: {
