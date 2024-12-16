@@ -167,7 +167,7 @@ function HavenDocs() {
         <header className="text-center mb-12">
           <h1 className="text-4xl font-bold mb-4">HavenModeration</h1>
           <p className="text-gray-400 max-w-2xl mx-auto">
-            Comprehensive moderation toolkit for Discord communities. Select a
+            This bot helps with tasks in the mod team. Select a
             category below to explore available features and commands.
           </p>
         </header>
