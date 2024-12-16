@@ -1,141 +1,186 @@
-const { useState, useRef, useEffect } = React;
-const { createRoot } = ReactDOM;
+import React, { useState, useRef, useEffect } from 'react';
 
-function Icon({ name, ...props }) {
-   const ref = useRef();
-   
-   useEffect(() => {
-       if (ref.current) {
-           lucide.createIcons({
-               icons: {
-                   [name]: ref.current
-               }
-           });
-       }
-   }, [name]);
+const Icon = ({ name, size = "w-5 h-5", className = "" }) => {
+  const ref = useRef();
+  
+  useEffect(() => {
+    if (ref.current) {
+      lucide.createIcons({
+        icons: { [name]: ref.current }
+      });
+    }
+  }, [name]);
 
-   return <i ref={ref} data-lucide={name} {...props}></i>;
+  return <i ref={ref} data-lucide={name} className={`${size} ${className}`} />;
+};
+
+export default function HavenDocs() {
+  const [selectedFeature, setSelectedFeature] = useState('teams');
+  const [searchQuery, setSearchQuery] = useState('');
+
+  const features = {
+    teams: {
+      icon: <Icon name="users-round" />,
+      title: "Team Management",
+      description: "Create and manage moderation teams with dedicated team leads.",
+      commands: [
+        { name: "/team create", desc: "Create a new team with a designated team lead" },
+        { name: "/team edit name", desc: "Change a team's name" },
+        { name: "/team edit team_lead", desc: "Assign a new team lead" },
+        { name: "/teamswap", desc: "Move staff between teams" },
+        { name: "/teamdashboard init", desc: "Initialize the team dashboard" }
+      ],
+      color: "from-blue-500/10 to-blue-500/5"
+    },
+    moderation: {
+      icon: <Icon name="shield-check" />,
+      title: "Moderation Tools",
+      description: "Comprehensive tools for managing staff and enforcing rules.",
+      commands: [
+        { name: "/strike add", desc: "Issue a strike to a staff member" },
+        { name: "/strike remove", desc: "Remove an active strike" },
+        { name: "/strike view", desc: "View a staff member's strikes" },
+        { name: "/blacklist add", desc: "Add a user to the blacklist" },
+        { name: "/blacklist view", desc: "View blacklist entries" }
+      ],
+      color: "from-red-500/10 to-red-500/5"
+    },
+    staff: {
+      icon: <Icon name="award" />,
+      title: "Staff Management",
+      description: "Enroll and manage staff members with various ranks.",
+      commands: [
+        { name: "/enroll", desc: "Add new staff members to the system" },
+        { name: "/fire", desc: "Remove staff members from the system" },
+        { name: "/profile", desc: "View staff member profiles" },
+        { name: "/pay check", desc: "Check your monthly compensation" }
+      ],
+      color: "from-purple-500/10 to-purple-500/5"
+    },
+    tracking: {
+      icon: <Icon name="bar-chart-3" />,
+      title: "Activity Tracking",
+      description: "Monitor and analyze staff performance and activity.",
+      commands: [
+        { name: "/statistics", desc: "View department-wide statistics" },
+        { name: "Auto Modcall", desc: "Automatic tracking of modcall claims" },
+        { name: "/cooldown", desc: "Check rank change cooldowns" }
+      ],
+      color: "from-green-500/10 to-green-500/5"
+    },
+    utility: {
+      icon: <Icon name="tools" />,
+      title: "Utility Features",
+      description: "Additional tools and features for staff use.",
+      commands: [
+        { name: "/request", desc: "Submit rank change requests" },
+        { name: "/pride", desc: "Display pride flags" },
+        { name: "/bot-info", desc: "View bot information" }
+      ],
+      color: "from-orange-500/10 to-orange-500/5"
+    }
+  };
+
+  const FeatureCard = ({ id, data, isSelected }) => {
+    const bgColor = isSelected ? 'bg-white' : 'bg-white/5 hover:bg-white/10';
+    const textColor = isSelected ? 'text-gray-900' : 'text-white';
+    
+    return (
+      <div 
+        className={`relative overflow-hidden rounded-xl backdrop-blur-sm cursor-pointer transition-all border border-white/10 ${bgColor} ${textColor}`}
+        onClick={() => setSelectedFeature(id)}
+      >
+        <div className={`absolute inset-0 bg-gradient-to-br ${data.color} transition-opacity ${isSelected ? 'opacity-100' : 'opacity-0'}`} />
+        <div className="relative p-4">
+          <div className="flex items-center gap-3 mb-3">
+            {data.icon}
+            <h3 className="font-bold">{data.title}</h3>
+          </div>
+          <p className={`text-sm ${isSelected ? 'text-gray-600' : 'text-gray-400'}`}>{data.description}</p>
+        </div>
+      </div>
+    );
+  };
+
+  const CommandBlock = ({ command }) => (
+    <div className="group relative overflow-hidden rounded-lg bg-white/5 hover:bg-white/10 border border-white/10 transition-all p-4">
+      <div className="flex items-center justify-between gap-4">
+        <div>
+          <code className="font-mono text-blue-400">{command.name}</code>
+          <p className="mt-1 text-sm text-gray-400">{command.desc}</p>
+        </div>
+        <button 
+          onClick={() => navigator.clipboard.writeText(command.name)}
+          className="opacity-0 group-hover:opacity-100 transition-opacity p-2 hover:bg-white/10 rounded-lg"
+          title="Copy command"
+        >
+          <Icon name="clipboard" size="w-4 h-4" className="text-gray-400" />
+        </button>
+      </div>
+    </div>
+  );
+
+  const SearchBar = () => (
+    <div className="relative">
+      <Icon name="search" className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+      <input
+        type="text"
+        placeholder="Search commands..."
+        className="w-full bg-white/5 border border-white/10 rounded-lg pl-10 pr-4 py-2 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500/50"
+        value={searchQuery}
+        onChange={(e) => setSearchQuery(e.target.value)}
+      />
+    </div>
+  );
+
+  const filteredCommands = features[selectedFeature].commands.filter(cmd =>
+    cmd.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    cmd.desc.toLowerCase().includes(searchQuery.toLowerCase())
+  );
+
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-gray-900 to-gray-800 text-white p-6 md:p-8">
+      <div className="max-w-7xl mx-auto">
+        <header className="text-center mb-12">
+          <h1 className="text-4xl font-bold mb-4">HavenModeration</h1>
+          <p className="text-gray-400 max-w-2xl mx-auto">
+            Comprehensive moderation toolkit for Discord communities. Select a category below to explore available features and commands.
+          </p>
+        </header>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-8">
+          {Object.entries(features).map(([id, data]) => (
+            <FeatureCard 
+              key={id} 
+              id={id} 
+              data={data} 
+              isSelected={selectedFeature === id} 
+            />
+          ))}
+        </div>
+
+        <div className="space-y-6">
+          <div className="flex items-center justify-between gap-4">
+            <h2 className="text-xl font-semibold">Available Commands</h2>
+            <SearchBar />
+          </div>
+
+          <div className="grid gap-4">
+            {filteredCommands.map((cmd, i) => (
+              <CommandBlock key={i} command={cmd} />
+            ))}
+            {filteredCommands.length === 0 && (
+              <div className="text-center py-8 text-gray-400">
+                <Icon name="search-x" className="mx-auto mb-3" />
+                <p>No commands match your search</p>
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
 }
 
-function DemoInterface() {
-   const [selectedFeature, setSelectedFeature] = useState('teams');
-
-   const features = {
-       teams: {
-           icon: <Icon name="users" />,
-           title: "Team Management",
-           description: "Create and manage moderation teams with dedicated team leads.",
-           commands: [
-               { name: "/team create", desc: "Create a new team with a designated team lead" },
-               { name: "/team edit name", desc: "Change a team's name" },
-               { name: "/team edit team_lead", desc: "Assign a new team lead" },
-               { name: "/teamswap", desc: "Move staff between teams" },
-               { name: "/teamdashboard init", desc: "Initialize the team dashboard" }
-           ]
-       },
-       moderation: {
-           icon: <Icon name="shield" />,
-           title: "Moderation Tools",
-           description: "Comprehensive tools for managing staff and enforcing rules.",
-           commands: [
-               { name: "/strike add", desc: "Issue a strike to a staff member" },
-               { name: "/strike remove", desc: "Remove an active strike" },
-               { name: "/strike view", desc: "View a staff member's strikes" },
-               { name: "/blacklist add", desc: "Add a user to the blacklist" },
-               { name: "/blacklist view", desc: "View blacklist entries" }
-           ]
-       },
-       staff: {
-           icon: <Icon name="award" />,
-           title: "Staff Management",
-           description: "Enroll and manage staff members with various ranks.",
-           commands: [
-               { name: "/enroll", desc: "Add new staff members to the system" },
-               { name: "/fire", desc: "Remove staff members from the system" },
-               { name: "/profile", desc: "View staff member profiles" },
-               { name: "/pay check", desc: "Check your monthly compensation" }
-           ]
-       },
-       tracking: {
-           icon: <Icon name="target" />,
-           title: "Activity Tracking",
-           description: "Monitor and analyze staff performance and activity.",
-           commands: [
-               { name: "/statistics", desc: "View department-wide statistics" },
-               { name: "Auto Modcall", desc: "Automatic tracking of modcall claims" },
-               { name: "/cooldown", desc: "Check rank change cooldowns" }
-           ]
-       },
-       utility: {
-           icon: <Icon name="brain" />,
-           title: "Utility Features",
-           description: "Additional tools and features for staff use.",
-           commands: [
-               { name: "/request", desc: "Submit rank change requests" },
-               { name: "/pride", desc: "Display pride flags" },
-               { name: "/bot-info", desc: "View bot information" }
-           ]
-       }
-   };
-
-   const FeatureCard = ({ id, data, isSelected }) => (
-       <div 
-           className={`p-4 rounded-lg cursor-pointer transition-all ${
-               isSelected ? 'bg-blue-600 text-white' : 'bg-gray-100 hover:bg-gray-200'
-           }`}
-           onClick={() => setSelectedFeature(id)}
-       >
-           <div className="flex items-center gap-2 mb-2">
-               {data.icon}
-               <h3 className="font-bold">{data.title}</h3>
-           </div>
-           <p className="text-sm">{data.description}</p>
-       </div>
-   );
-
-   const CommandList = ({ commands }) => (
-       <div className="mt-4">
-           <h4 className="font-bold mb-2">Available Commands:</h4>
-           <div className="space-y-2">
-               {commands.map((cmd, i) => (
-                   <div key={i} className="bg-gray-100 p-3 rounded">
-                       <code className="font-bold text-blue-600">{cmd.name}</code>
-                       <p className="text-sm text-gray-600 mt-1">{cmd.desc}</p>
-                   </div>
-               ))}
-           </div>
-       </div>
-   );
-
-   return (
-       <div className="max-w-4xl mx-auto p-6 space-y-6 bg-white rounded-lg">
-           <div className="text-center mb-8">
-               <h2 className="text-2xl font-bold mb-2">HavenModeration Features</h2>
-               <p className="text-gray-600">Select a category to learn more about available features and commands</p>
-           </div>
-
-           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-               {Object.entries(features).map(([id, data]) => (
-                   <FeatureCard 
-                       key={id} 
-                       id={id} 
-                       data={data} 
-                       isSelected={selectedFeature === id} 
-                   />
-               ))}
-           </div>
-
-           <div className="bg-white rounded-lg p-6 shadow-lg border border-gray-200">
-               <div className="flex items-center gap-3 mb-4">
-                   {features[selectedFeature].icon}
-                   <h3 className="text-xl font-bold">{features[selectedFeature].title}</h3>
-               </div>
-               <p className="text-gray-600 mb-4">{features[selectedFeature].description}</p>
-               <CommandList commands={features[selectedFeature].commands} />
-           </div>
-       </div>
-   );
-}
-
-const root = createRoot(document.getElementById('root'));
-root.render(<DemoInterface />);
+const root = ReactDOM.createRoot(document.getElementById('root'));
+root.render(<HavenDocs />);
