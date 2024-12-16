@@ -1,7 +1,10 @@
+const { useState, useRef, useEffect } = React;
+const { createRoot } = ReactDOM;
+
 function Icon({ name, ...props }) {
-   const ref = React.useRef();
+   const ref = useRef();
    
-   React.useEffect(() => {
+   useEffect(() => {
        if (ref.current) {
            lucide.createIcons({
                icons: {
@@ -15,7 +18,7 @@ function Icon({ name, ...props }) {
 }
 
 function DemoInterface() {
-   const [selectedFeature, setSelectedFeature] = React.useState('teams');
+   const [selectedFeature, setSelectedFeature] = useState('teams');
 
    const features = {
        teams: {
@@ -134,4 +137,5 @@ function DemoInterface() {
    );
 }
 
-ReactDOM.render(<DemoInterface />, document.getElementById('root'));
+const root = createRoot(document.getElementById('root'));
+root.render(<DemoInterface />);
