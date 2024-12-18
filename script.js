@@ -52,6 +52,7 @@ function HavenDocs() {
           name: "/team create",
           desc: "Create a new team with a designated team lead",
         },
+        { name: "/team announce", desc: "Make an announcement to your team" },
         { name: "/team edit name", desc: "Change a team's name" },
         { name: "/team edit team_lead", desc: "Assign a new team lead" },
         { name: "/teamswap", desc: "Move staff between teams" },
